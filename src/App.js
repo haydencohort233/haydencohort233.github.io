@@ -18,8 +18,11 @@ function App() {
   const [avatarOffset, setAvatarOffset] = useState({ x: 0, y: 0 });
   const [isAvatarVisible, setIsAvatarVisible] = useState(false);
   const [isCardVisible, setIsCardVisible] = useState(false);
-  const [isSkillsWindowVisible, setIsSkillsWindowVisible] = useState(true);
-
+  const [isSkillsWindowVisible, setIsSkillsWindowVisible] = useState(false);
+  const [skillsPosition, setSkillsPosition] = useState({ x: 0, y: 0 });
+  const [isSkillsDragging, setIsSkillsDragging] = useState(false);
+  const [skillsOffset, setSkillsOffset] = useState({ x: 0, y: 0 });
+  const startMenuRef = useRef(null);
 
   const skills = [
     {
@@ -56,30 +59,38 @@ function App() {
     }
   ];
 
-  const handlePrevious = () => {
-    setCurrentSkillIndex((prevIndex) =>
-      prevIndex === 0 ? skills.length - 1 : prevIndex - 1
-    );
-  };
-
-  const handleNext = () => {
-    setCurrentSkillIndex((prevIndex) =>
-      prevIndex === skills.length - 1 ? 0 : prevIndex + 1
-    );
-  };
-
+  /* Get time for taskbar */
   function getCurrentDateTime() {
     const now = new Date();
     const options = { month: '2-digit', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
     return now.toLocaleString('en-US', options);
   }
 
+  /* Previous skill displayed */
+  const handlePrevious = () => {
+    setCurrentSkillIndex((prevIndex) =>
+      prevIndex === 0 ? skills.length - 1 : prevIndex - 1
+    );
+  };
+
+  /* Next skill displayed */
+  const handleNext = () => {
+    setCurrentSkillIndex((prevIndex) =>
+      prevIndex === skills.length - 1 ? 0 : prevIndex + 1
+    );
+  };
+
   const handleSkillClick = (index) => {
     setCurrentSkillIndex(index);
   };
 
-  const startMenuRef = useRef(null);
+  /* Opens start menu */
+  const toggleStartMenu = () => {
+    setShowStartMenu((prevState) => !prevState);
+  };
 
+
+  /* Dismisses the start menu if clicked off */
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (startMenuRef.current && !startMenuRef.current.contains(event.target)) {
@@ -93,16 +104,14 @@ function App() {
     };
   }, [startMenuRef]);
 
-  const toggleStartMenu = () => {
-    setShowStartMenu((prevState) => !prevState);
-  };
-
+  /* Handles dragging all of windows */
   const handleCardMouseDown = (e) => {
     setIsCardDragging(true);
     setCardOffset({
       x: e.clientX - cardPosition.x,
       y: e.clientY - cardPosition.y,
     });
+    document.body.classList.add('noselect');
   };
 
   const handleCardMouseMove = (e) => {
@@ -116,6 +125,7 @@ function App() {
 
   const handleCardMouseUp = () => {
     setIsCardDragging(false);
+    document.body.classList.remove('noselect');
   };
 
   const handleMouseDown = (e) => {
@@ -124,6 +134,7 @@ function App() {
       x: e.clientX - modalPosition.x,
       y: e.clientY - modalPosition.y,
     });
+    document.body.classList.add('noselect');
   };
 
   const handleMouseMove = (e) => {
@@ -137,28 +148,54 @@ function App() {
 
   const handleMouseUp = () => {
     setIsDragging(false);
+    document.body.classList.remove('noselect');
   };
 
-const handleAvatarMouseDown = (e) => {
-  setIsAvatarDragging(true);
-  setAvatarOffset({
-    x: e.clientX - avatarPosition.x,
-    y: e.clientY - avatarPosition.y,
-  });
-};
-
-const handleAvatarMouseMove = (e) => {
-  if (isAvatarDragging) {
-    setAvatarPosition({
-      x: e.clientX - avatarOffset.x,
-      y: e.clientY - avatarOffset.y,
+  const handleAvatarMouseDown = (e) => {
+    setIsAvatarDragging(true);
+    setAvatarOffset({
+      x: e.clientX - avatarPosition.x,
+      y: e.clientY - avatarPosition.y,
     });
-  }
-};
+    document.body.classList.add('noselect');
+  };
 
-const handleAvatarMouseUp = () => {
-  setIsAvatarDragging(false);
-};
+  const handleAvatarMouseMove = (e) => {
+    if (isAvatarDragging) {
+      setAvatarPosition({
+        x: e.clientX - avatarOffset.x,
+        y: e.clientY - avatarOffset.y,
+      });
+    }
+  };
+
+  const handleAvatarMouseUp = () => {
+    setIsAvatarDragging(false);
+    document.body.classList.remove('noselect');
+  };
+
+  const handleSkillsMouseDown = (e) => {
+    setIsSkillsDragging(true);
+    setSkillsOffset({
+      x: e.clientX - skillsPosition.x,
+      y: e.clientY - skillsPosition.y,
+    });
+    document.body.classList.add('noselect');
+  };
+
+  const handleSkillsMouseMove = (e) => {
+    if (isSkillsDragging) {
+      setSkillsPosition({
+        x: e.clientX - skillsOffset.x,
+        y: e.clientY - skillsOffset.y,
+      });
+    }
+  };
+
+  const handleSkillsMouseUp = () => {
+    setIsSkillsDragging(false);
+    document.body.classList.remove('noselect');
+  };
 
   return (
     <div className="App">
@@ -229,6 +266,7 @@ const handleAvatarMouseUp = () => {
                 transform: `translate(${modalPosition.x}px, ${modalPosition.y}px)`,
                 cursor: isDragging ? "grabbing" : "grab",
                 position: "fixed",
+                zIndex: 999,
               }}
               onMouseDown={handleMouseDown}
               onMouseMove={handleMouseMove}
@@ -272,13 +310,25 @@ const handleAvatarMouseUp = () => {
       </div>
 
       {isSkillsWindowVisible && (
-        <div className="skills-window">
+        <div
+          className="skills-window"
+          style={{
+            transform: `translate(${skillsPosition.x}px, ${skillsPosition.y}px)`,
+            cursor: isSkillsDragging ? 'grabbing' : 'grab',
+            position: 'fixed',
+            zIndex: 999,
+          }}
+          onMouseDown={handleSkillsMouseDown}
+          onMouseMove={handleSkillsMouseMove}
+          onMouseUp={handleSkillsMouseUp}
+          onMouseLeave={handleSkillsMouseUp}
+        >
           <div className="window-header">
             <span className="window-title">Skills</span>
             <button className="btn-close" onClick={() => setIsSkillsWindowVisible(false)}>X</button>
           </div>
           <div className="window-content">
-            {/* Skills List on the Left */}
+            {/* Skills List on the left */}
             <div className="skills-list">
               <ul>
                 {skills.map((skill, index) => (
@@ -293,7 +343,7 @@ const handleAvatarMouseUp = () => {
               </ul>
             </div>
 
-            {/* Skill Details on the Right */}
+            {/* Skill Details on the right */}
             <div className="skill-details">
               <h2>{skills[currentSkillIndex].name}</h2>
               <p><strong>Level:</strong> {skills[currentSkillIndex].level}</p>
@@ -339,14 +389,14 @@ const handleAvatarMouseUp = () => {
             onClick={() => setIsCardVisible(true)} 
           />
         </div>
-        <div className="desktop-icon-projects">
+        <div className="desktop-icon-avatar">
           <DesktopIcon 
             icon="/assets/avatar/avatar.png" 
             label="avatar.png" 
             onClick={() => setIsAvatarVisible(true)} 
           />
         </div>
-        <div className="desktop-icon-projects">
+        <div className="desktop-icon-skills">
           <DesktopIcon
             icon="/assets/desktop/calculator.png"
             label="Skills"

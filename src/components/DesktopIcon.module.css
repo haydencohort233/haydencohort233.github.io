@@ -10,26 +10,26 @@
   .iconImage {
     width: 64px;
     height: 64px;
-    z-index: 999;
+    z-index: 666;
   }
   
   .iconLabel {
     margin-top: 8px;
     font-size: 14px;
     color: #fff;
-    z-index: 999;
+    z-index: 666;
   }
   
   .desktopIconContainer {
     position: relative;
-    top: 120px; /* Adjusts the vertical position */
+    top: 120px;
     display: flex;
     justify-content: center;
     padding: 10px;
   }
   
   .highlighted {
-    background-color: #0078d4; /* Windows 95-style blue highlight */
+    background-color: #0078d4;
     opacity: 0.8;
     border: 1px solid #fff;
     padding: 7px;

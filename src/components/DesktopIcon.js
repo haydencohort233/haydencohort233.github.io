@@ -12,7 +12,7 @@ const DesktopIcon = ({ icon, label, onClick }) => {
 
   const handleDoubleClick = () => {
     onClick();
-    setIsHighlighted(false); // Optionally remove highlight after opening
+    setIsHighlighted(false); // Remove icon highlight after opening
   };
 
   const handleClick = () => {
@@ -24,7 +24,7 @@ const DesktopIcon = ({ icon, label, onClick }) => {
       clickTimeoutRef.current = setTimeout(() => {
         handleSingleClick();
         clickTimeoutRef.current = null;
-      }, 200); // 200ms delay to differentiate between single and double-click
+      }, 200); // Differentiates between single and double-click for highlighting
     }
   };
 
